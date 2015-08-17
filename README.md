@@ -1,4 +1,4 @@
-# ES5_STRICT_MODE
+# ES5_STRICT_MODE ECMAScript5.1 严格模式
 
 ## 严格模式的总体特征
 + 首先，严格模式消除了一些Javascript的哑错误，而是抛出异常
@@ -20,12 +20,14 @@ ECMAScript 5.1中定义的指令序言如下：
 在函数级作用域内生效，将'use strict';放在执行函数的顶部，当时并不要求一定要在第一个位置（但是指令序言整体必须被放在开始的位置），当然在此之前的注释部分并不阻碍严格模式的生效
 
 此外，严格模式的效应会延长到所有的内部函数之中，也就是内部函数是严格模式的，其条件就是要么其本身是严格模式要么其外部函数作用域是严格模式。需要注意的一点是，这种关系是在定义的时候确定的，而不是在执行的时候，也就是从字面量的意义上来确定内部函数是否是严格模式。
-    例如：
-        function a() {}
-        function b() {'use strict'; a();} // 尽管b函数是严格模式，但是a由于不是定义在严格模式之下，所以a也不知严格模式
-        function b() {'use strict'; function a() {}} // 此时a是严格模式
+例如：
+
+    function a() {}
+    function b() {'use strict'; a();} // 尽管b函数是严格模式，但是a由于不是定义在严格模式之下，所以a也不知严格模式
+    function b() {'use strict'; function a() {}} // 此时a是严格模式
 
 使用Function构造器所创建的函数并不从其定义的外部作用域中继承严格模式。
+
     'use strict';
     var f = new Function('eval', 'arguments', 'eval = 10; arguments = 1;')
     f(); // f不是严格模式，故而可以执行
