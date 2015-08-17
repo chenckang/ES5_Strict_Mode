@@ -1,4 +1,4 @@
-# ES5_STRICT_MODE ECMAScript5.1 严格模式
+# ECMAScript5.1 严格模式
 
 ## 严格模式的总体特征
 
