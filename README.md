@@ -1,43 +1,40 @@
 # ES5_STRICT_MODE
 
-首先，严格模式消除了一些Javascript的哑错误，而是抛出异常
-第二，严格模式消除了一些不理由js引擎进行性能优化的语言特性
-第三，严格模式禁止可能在后续的js版本中所采用的语法
+## 严格模式的总体特征
++ 首先，严格模式消除了一些Javascript的哑错误，而是抛出异常
++ 第二，严格模式消除了一些不理由js引擎进行性能优化的语言特性
++ 第三，严格模式禁止可能在后续的js版本中所采用的语法
 
-开启严格模式
-    在任何的其他js代码前加上，'use strict'或者"use strict"，已开启针对一个代码单元（Code Unit
+## 开启严格模式
+在任何的其他js代码前加上，'use strict'或者"use strict"，已开启针对一个代码单元（Code Unit
 ）的严格模式。这串字符就是指令序言（'Directive Prologues')
 
-    ECMAScript 5.1中定义的指令序言如下：
-        A Directive Prologues is a sequence of directives represented entirely as string literals which followed by an optional semicolon. A Directive Prologue may be an empty sequence.
-    目前ES5只定义了一个特别序言，也就是严格模式指令
+ECMAScript 5.1中定义的指令序言如下：
+> A Directive Prologues is a sequence of directives represented entirely as string literals which followed by an optional semicolon. A Directive Prologue may be an empty sequence.
 
-    注意，指令序言实际上可以包含一个和多个指令，但浏览器可能会触发一个警告。
+目前ES5只定义了一个特别序言，也就是严格模式指令
 
+注意，指令序言实际上可以包含一个和多个指令，但浏览器可能会触发一个警告。
 
-严格模式的作用域区间
-    在函数级作用域内生效，将'use strict';放在执行函数的顶部，当时并不要求一定要在第一个位置（但是指令序言整体必须被放在开始的位置），当然在此之前的注释部分并不阻碍严格模式的生效
+## 严格模式的作用域区间
+在函数级作用域内生效，将'use strict';放在执行函数的顶部，当时并不要求一定要在第一个位置（但是指令序言整体必须被放在开始的位置），当然在此之前的注释部分并不阻碍严格模式的生效
 
-    此外，严格模式的效应会延长到所有的内部函数之中，也就是内部函数是严格模式的，其条件就是要么其本身是严格模式要么其外部函数作用域是严格模式。需要注意的一点是，这种关系是在定义的时候确定的，而不是在执行的时候，也就是从字面量的意义上来确定内部函数是否是严格模式。
-        例如：
-            function a() {}
-            function b() {'use strict'; a();} // 尽管b函数是严格模式，但是a由于不是定义在严格模式之下，所以a也不知严格模式
+此外，严格模式的效应会延长到所有的内部函数之中，也就是内部函数是严格模式的，其条件就是要么其本身是严格模式要么其外部函数作用域是严格模式。需要注意的一点是，这种关系是在定义的时候确定的，而不是在执行的时候，也就是从字面量的意义上来确定内部函数是否是严格模式。
+    例如：
+        function a() {}
+        function b() {'use strict'; a();} // 尽管b函数是严格模式，但是a由于不是定义在严格模式之下，所以a也不知严格模式
+        function b() {'use strict'; function a() {}} // 此时a是严格模式
 
-            function b() {'use strict'; function a() {}} // 此时a是严格模式
+使用Function构造器所创建的函数并不从其定义的外部作用域中继承严格模式。
+    'use strict';
+    var f = new Function('eval', 'arguments', 'eval = 10; arguments = 1;')
+    f(); // f不是严格模式，故而可以执行
+    var f = new Function('eval', 'arguments', '"use strict"; eval = 10; arguments = 1;')
+    f(); // SyntaxError
 
-    使用Function构造器所创建的函数并不从其定义的外部作用域中继承严格模式。
-        'use strict';
-        var f = new Function('eval', 'arguments', 'eval = 10; arguments = 1;')
-        f(); // f不是严格模式，故而可以执行
-        var f = new Function('eval', 'arguments', '"use strict"; eval = 10; arguments = 1;')
-        f(); // SyntaxError
+最后，即使在严格模式下，indirect eval会在全局环境中创建变量，但是direct eval则会在eval作用域中执行
 
-    最后，即使在严格模式下，indirect eval会在全局环境中创建变量，但是direct eval则会在eval作用域中执行
-
-
-
-
-严格模式对语法及运行时的js都有影响，
+## 严格模式对语法及运行时的js都有影响，
 1） 将mistakes转换为errors
     首先，让不经意间创建全局变量变得不可能
         mistypedVariable = 15 // 由于拼错了变量而创建全局变量，严格模式下会抛出ReferenceError异常
