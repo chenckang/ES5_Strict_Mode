@@ -1,0 +1,1 @@
+# ES5_STRICT_MODE 
