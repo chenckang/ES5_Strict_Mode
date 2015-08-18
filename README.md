@@ -1,14 +1,16 @@
 # ECMAScript5.1 严格模式
 
-## 严格模式的总体特征
+## 严格模式的总体目标
 
-+ 首先，严格模式消除了一些Javascript的哑错误，而是抛出异常
-+ 第二，严格模式消除了一些不理由js引擎进行性能优化的语言特性
-+ 第三，严格模式禁止可能在后续的js版本中所采用的语法
+大体而言，严格模式存在的意义如下三点：
+
++ 首先，严格模式消除了一些Javascript的静默错误（Silent Error），而是显式的抛出异常，从而显式的提示错误，而静默的进行失败处理，则可能导致留下位置的问题，详细内容后面会给出
++ 第二，严格模式消除了一些不利于ECMAScript引擎性能优化的语言特性
++ 第三，严格模式禁止可能在后续的ECMAScript版本中所采用的语法
 
 ## 开启严格模式
 
-在任何的其他js代码前加上，'use strict'或者"use strict"，已开启针对一个代码单元（Code Unit
+在任何的其他js代码前加上，`'use strict'`或者`"use strict"`，已开启针对一个代码单元（Code Unit
 ）的严格模式。这串字符就是指令序言（'Directive Prologues')
 
 ECMAScript 5.1中定义的指令序言如下：
@@ -18,9 +20,35 @@ ECMAScript 5.1中定义的指令序言如下：
 
 注意，指令序言实际上可以包含一个和多个指令，但浏览器可能会触发一个警告。
 
+## ES5.1 中的严格模式的说明
+
+在ES5.1规范中，严格模式在文档最后的附录部分被具体列出了，尽管在其ES5.1的正文中提到了很多细节，以及具体实现的算法描述，下面给出附录中的总体描述：
+
++ 标识符`implement`, `interface`, `let`, `package`, `private`, `protected`, `public`, `static`以及`yield`被作为未来保留关键字指令
++ 禁止对数字字面量__NumericLiteral__的拓展以支持八进制数字字面量__OctalIntegerLiteral__
++ 禁止对转移字符串字面量__EscapeSequence__的拓展以支持八进制转移字符串__OctalEscapeSequence__
++ 赋值语句中向未声明的标示符或者无指向的引用并不会在全局作用域中创建变量，同时__LeftHandSide__的左边也不能指向一个`{[[Writable]: false}`的对象的成员属性，或者`{[[set]]: undefined}`的对象的方法属性，以及不扩扩展对象(`[[Extensible]]`属性为false)的任意成员。
++ eval以及arguments不能出现在赋值操作符或者后缀表达式__PostfixExpress__或者在前缀自增符号及后缀自增符号中的一元表达式__UnaryExpress__的__LeftHandSideExpression__
++ Arguments对象定义了不可配置的属性（Non-configurable）的caller及callee属性，调用这些属性将抛出TypeError异常
++ Arguments对象与函数实际传入参数之间没有动态绑定关系
++ `arguments`变量标识符是作为对arguments对象的不可变引用，因而也就不能被作为赋值表达式的赋值目标
++ 如果对象字面量中包含重复的成员属性名则抛出`SyntaxError`异常
++ 如果`eval`及`arguments`作为对象的属性名称则抛出`SyntaxError`（原文如下：在属性赋值语句中，`eval`及`arguments`出现在属性赋值表达式__PropertyAssignment__中的属性赋值参数列表__PropertySetParameterList__中, 作为标示符使用，也就是说`eval`及`argument`不能作为属性名称使用）
++ 严格模式不能够将`eval`外部的变量及函数赋给`eval`内部，而是`eval`函数内部会创建一个新的变量环境，用于`eval`函数内部声明绑定使用。
++ 如果`this`变量在严格模式下使用，则`this`不会被强制转换为对象类型，`null`及`undefined`的`this`值不会被转化为全局对象，同时基本类型不会被转换为包裹对象
++ 如果`delete`作为一元操作符，直接作用于一个变量、函数参数或者函数名，则抛出SyntaxError异常
++ 如果`delete`删除的对象的对象的属性描述符是`{[[configurable: false}`，则抛出TypeError异常
++ 当变量声明存在`eval`及`arguments`变量，则抛出SyntaxError异常
++ 严格模式中不能存在__WithStatement__，with语句将抛出SyntaxError异常
++ 如果__TryStatement__中的`catch`的变量中存在`eval`及`arguments`，则抛出SyntaxError异常
++ 如果函数声明或者函数表达式中`eval`及`arguments`作为函数参数存在则抛出SyntaxError异常
++ 在函数表达式或者函数声明，或者使用`Function`构造函数创建的函数中，存在两个以上的同名参数，则抛出SyntaxError异常
++ 不能创建及更改名为`caller`及`arguments`且挂在在函数本身身上的属性
++ 尝试使用`eval`或者`arguments`作为变量标识符、函数声明、函数表达式或者作为函数参数将抛出SyntaxError异常
+
 ## 严格模式的作用域区间
 
-在函数级作用域内生效，将'use strict';放在执行函数的顶部，当时并不要求一定要在第一个位置（但是指令序言整体必须被放在开始的位置），当然在此之前的注释部分并不阻碍严格模式的生效
+在函数级作用域内生效，将`'use strict';`放在执行函数的顶部，当时并不要求一定要在第一个位置（但是指令序言整体必须被放在开始的位置），当然在此之前的注释部分并不阻碍严格模式的生效
 
 此外，严格模式的效应会延长到所有的内部函数之中，也就是内部函数是严格模式的，其条件就是要么其本身是严格模式要么其外部函数作用域是严格模式。需要注意的一点是，这种关系是在定义的时候确定的，而不是在执行的时候，也就是从字面量的意义上来确定内部函数是否是严格模式。
 例如：
@@ -74,13 +102,12 @@ ECMAScript 5.1中定义的指令序言如下：
 #### 第五，严格模式要求函数的参数名唯一，而普通模式系下，最后一个同名参数生效，但仍然能通过arguments[i]来访问
 
     function foo(a, a, b) { // Syntax Error
-
     }
 
 #### 第六，严格模式禁止八进制数字
 
 八进制也不是ECMAScript的规范内容，并且八进制的表达方式极易引起人的误解并且被滥用，特别在parseInt中，会的到令人困惑的以及不一致的结果。
-严格模式不会扩展数字字面量的八进制以及转义形式的字符串八进制。即使在ES3中，八进制也是作为一种向后兼容的手段
+严格模式不会扩展数字字面量的八进制以及转义形式的字符串八进制。即使在ES3中，八进制也仅仅作为一种向后兼容的手段
 
     var sum = 011; // SyntaxError
     var sum = '\0123' // SyntaxError
