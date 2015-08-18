@@ -25,26 +25,26 @@ ECMAScript 5.1中定义的指令序言如下：
 在ES5.1规范中，严格模式在文档最后的附录部分被具体列出了，尽管在其ES5.1的正文中提到了很多细节，以及具体实现的算法描述，下面给出附录中的总体描述：
 
 + 标识符`implement`, `interface`, `let`, `package`, `private`, `protected`, `public`, `static`以及`yield`被作为未来保留关键字指令
-+ 禁止对数字字面量__NumericLiteral__的拓展以支持八进制数字字面量__OctalIntegerLiteral__
-+ 禁止对转移字符串字面量__EscapeSequence__的拓展以支持八进制转移字符串__OctalEscapeSequence__
-+ 赋值语句中向未声明的标示符或者无指向的引用并不会在全局作用域中创建变量，同时__LeftHandSide__的左边也不能指向一个`{[[Writable]: false}`的对象的成员属性，或者`{[[set]]: undefined}`的对象的方法属性，以及不扩扩展对象(`[[Extensible]]`属性为false)的任意成员。
-+ eval以及arguments不能出现在赋值操作符或者后缀表达式__PostfixExpress__或者在前缀自增符号及后缀自增符号中的一元表达式__UnaryExpress__的__LeftHandSideExpression__
-+ Arguments对象定义了不可配置的属性（Non-configurable）的caller及callee属性，调用这些属性将抛出TypeError异常
++ 禁止对数字字面量___NumericLiteral___的拓展以支持八进制数字字面量___OctalIntegerLiteral___
++ 禁止对转移字符串字面量___EscapeSequence___的拓展以支持八进制转移字符串___OctalEscapeSequence___
++ 赋值语句中向未声明的标示符或者无指向的引用并不会在全局作用域中创建变量，同时___LeftHandSide___的左边也不能指向一个`{[[Writable]: false}`的对象的成员属性，或者`{[[set]]: undefined}`的对象的方法属性，以及不扩扩展对象(`[[Extensible]]`属性为false)的任意成员。
++ eval以及arguments不能出现在赋值操作符或者后缀表达式___PostfixExpress___或者在前缀自增符号及后缀自增符号中的一元表达式___UnaryExpress___的___LeftHandSideExpression___
++ Arguments对象定义了不可配置的属性（Non-configurable）的`caller`及`callee`属性，调用这些属性将抛出`TypeError`异常
 + Arguments对象与函数实际传入参数之间没有动态绑定关系
 + `arguments`变量标识符是作为对arguments对象的不可变引用，因而也就不能被作为赋值表达式的赋值目标
 + 如果对象字面量中包含重复的成员属性名则抛出`SyntaxError`异常
-+ 如果`eval`及`arguments`作为对象的属性名称则抛出`SyntaxError`（原文如下：在属性赋值语句中，`eval`及`arguments`出现在属性赋值表达式__PropertyAssignment__中的属性赋值参数列表__PropertySetParameterList__中, 作为标示符使用，也就是说`eval`及`argument`不能作为属性名称使用）
++ 如果`eval`及`arguments`作为对象的属性名称则抛出`SyntaxError`（原文如下：在属性赋值语句中，`eval`及`arguments`出现在属性赋值表达式___PropertyAssignment___中的属性赋值参数列表___PropertySetParameterList___中, 作为标示符使用，也就是说`eval`及`argument`不能作为属性名称使用）
 + 严格模式不能够将`eval`外部的变量及函数赋给`eval`内部，而是`eval`函数内部会创建一个新的变量环境，用于`eval`函数内部声明绑定使用。
 + 如果`this`变量在严格模式下使用，则`this`不会被强制转换为对象类型，`null`及`undefined`的`this`值不会被转化为全局对象，同时基本类型不会被转换为包裹对象
-+ 如果`delete`作为一元操作符，直接作用于一个变量、函数参数或者函数名，则抛出SyntaxError异常
-+ 如果`delete`删除的对象的对象的属性描述符是`{[[configurable: false}`，则抛出TypeError异常
-+ 当变量声明存在`eval`及`arguments`变量，则抛出SyntaxError异常
-+ 严格模式中不能存在__WithStatement__，with语句将抛出SyntaxError异常
-+ 如果__TryStatement__中的`catch`的变量中存在`eval`及`arguments`，则抛出SyntaxError异常
-+ 如果函数声明或者函数表达式中`eval`及`arguments`作为函数参数存在则抛出SyntaxError异常
-+ 在函数表达式或者函数声明，或者使用`Function`构造函数创建的函数中，存在两个以上的同名参数，则抛出SyntaxError异常
++ 如果`delete`作为一元操作符，直接作用于一个变量、函数参数或者函数名，则抛出`SyntaxError`异常
++ 如果`delete`删除的对象的对象的属性描述符是`{[[configurable: false}`，则抛出`TypeError`异常
++ 当变量声明存在`eval`及`arguments`变量，则抛出`SyntaxError`异常
++ 严格模式中不能存在___WithStatement___，__with语句__将抛出`SyntaxError`异常
++ 如果___TryStatement___中的`catch`的变量中存在`eval`及`arguments`，则抛出`SyntaxError`异常
++ 如果函数声明或者函数表达式中`eval`及`arguments`作为函数参数存在则抛出`SyntaxError`异常
++ 在函数表达式或者函数声明，或者使用`Function`构造函数创建的函数中，存在两个以上的同名参数，则抛出`SyntaxError`异常
 + 不能创建及更改名为`caller`及`arguments`且挂在在函数本身身上的属性
-+ 尝试使用`eval`或者`arguments`作为变量标识符、函数声明、函数表达式或者作为函数参数将抛出SyntaxError异常
++ 尝试使用`eval`或者`arguments`作为变量标识符、函数声明、函数表达式或者作为函数参数将抛出`SyntaxError`异常
 
 ## 严格模式的作用域区间
 
