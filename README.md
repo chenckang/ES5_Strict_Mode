@@ -1,4 +1,4 @@
-# ECMAScript5.1 严格模式
+# ECMAScript5.1 严格模式浅入深出
 
 ## 严格模式的总体目标
 
@@ -11,53 +11,50 @@
 ## 开启严格模式
 
 在任何的其他js代码前加上，`'use strict'`或者`"use strict"`，已开启针对一个代码单元（Code Unit
-）的严格模式。这串字符就是指令序言（'Directive Prologues')
+）的严格模式。这串字符就是指令序言（___Directive Prologues___)
 
 ECMAScript 5.1中定义的指令序言如下：
 > A Directive Prologues is a sequence of directives represented entirely as string literals which followed by an optional semicolon. A Directive Prologue may be an empty sequence.
 
-目前ES5只定义了一个特别序言，也就是严格模式指令
+目前ES5只定义了一个特别序言，也就是严格模式指令序言。
 
-注意，指令序言实际上可以包含一个和多个指令，但浏览器可能会触发一个警告。
+注意，当指令序言包含一个和多个指令时，浏览器可能会触发一个警告。
 
-## ES5.1 中的严格模式的说明
+总体而言按作用域范围划分存在几种类型的严格模式：
 
-在ES5.1规范中，严格模式在文档最后的附录部分被具体列出了，尽管在其ES5.1的正文中提到了很多细节，以及具体实现的算法描述，下面给出附录中的总体描述：
+#### `<script></script>`标签内作用域的严格模式
+    <script>
+        'use strict';
+        var eval = 1;
+    </script>
 
-+ 标识符`implement`, `interface`, `let`, `package`, `private`, `protected`, `public`, `static`以及`yield`被作为未来保留关键字指令
-+ 禁止对数字字面量___NumericLiteral___的拓展以支持八进制数字字面量___OctalIntegerLiteral___
-+ 禁止对转移字符串字面量___EscapeSequence___的拓展以支持八进制转移字符串___OctalEscapeSequence___
-+ 赋值语句中向未声明的标示符或者无指向的引用并不会在全局作用域中创建变量，同时___LeftHandSide___的左边也不能指向一个`{[[Writable]: false}`的对象的成员属性，或者`{[[set]]: undefined}`的对象的方法属性，以及不扩扩展对象(`[[Extensible]]`属性为false)的任意成员。
-+ eval以及arguments不能出现在赋值操作符或者后缀表达式___PostfixExpress___或者在前缀自增符号及后缀自增符号中的一元表达式___UnaryExpress___的___LeftHandSideExpression___
-+ Arguments对象定义了不可配置的属性（Non-configurable）的`caller`及`callee`属性，调用这些属性将抛出`TypeError`异常
-+ Arguments对象与函数实际传入参数之间没有动态绑定关系
-+ `arguments`变量标识符是作为对arguments对象的不可变引用，因而也就不能被作为赋值表达式的赋值目标
-+ 如果对象字面量中包含重复的成员属性名则抛出`SyntaxError`异常
-+ 如果`eval`及`arguments`作为对象的属性名称则抛出`SyntaxError`（原文如下：在属性赋值语句中，`eval`及`arguments`出现在属性赋值表达式___PropertyAssignment___中的属性赋值参数列表___PropertySetParameterList___中, 作为标示符使用，也就是说`eval`及`argument`不能作为属性名称使用）
-+ 严格模式不能够将`eval`外部的变量及函数赋给`eval`内部，而是`eval`函数内部会创建一个新的变量环境，用于`eval`函数内部声明绑定使用。
-+ 如果`this`变量在严格模式下使用，则`this`不会被强制转换为对象类型，`null`及`undefined`的`this`值不会被转化为全局对象，同时基本类型不会被转换为包裹对象
-+ 如果`delete`作为一元操作符，直接作用于一个变量、函数参数或者函数名，则抛出`SyntaxError`异常
-+ 如果`delete`删除的对象的对象的属性描述符是`{[[configurable: false}`，则抛出`TypeError`异常
-+ 当变量声明存在`eval`及`arguments`变量，则抛出`SyntaxError`异常
-+ 严格模式中不能存在___WithStatement___，__with语句__将抛出`SyntaxError`异常
-+ 如果___TryStatement___中的`catch`的变量中存在`eval`及`arguments`，则抛出`SyntaxError`异常
-+ 如果函数声明或者函数表达式中`eval`及`arguments`作为函数参数存在则抛出`SyntaxError`异常
-+ 在函数表达式或者函数声明，或者使用`Function`构造函数创建的函数中，存在两个以上的同名参数，则抛出`SyntaxError`异常
-+ 不能创建及更改名为`caller`及`arguments`且挂在在函数本身身上的属性
-+ 尝试使用`eval`或者`arguments`作为变量标识符、函数声明、函数表达式或者作为函数参数将抛出`SyntaxError`异常
+#### 函数作用域的严格模式
 
-## 严格模式的作用域区间
+    var a = function(){/* comment here */'use nostrict'; 'use strict'; var eval = 1;}
+    // 虽然上诉函数表达式的使用的指令序言不止一个，但是目前只有'use strict'是生效的。
+    // 注释不影响严格模式的生效
 
-在函数级作用域内生效，将`'use strict';`放在执行函数的顶部，当时并不要求一定要在第一个位置（但是指令序言整体必须被放在开始的位置），当然在此之前的注释部分并不阻碍严格模式的生效
+#### eval内部的严格模式
 
-此外，严格模式的效应会延长到所有的内部函数之中，也就是内部函数是严格模式的，其条件就是要么其本身是严格模式要么其外部函数作用域是严格模式。需要注意的一点是，这种关系是在定义的时候确定的，而不是在执行的时候，也就是从字面量的意义上来确定内部函数是否是严格模式。
-例如：
+    function a(){eval('"use strict";var eval = 1');}
+
+最后，即使在严格模式下，___Indirect Eval___会在全局环境中创建变量，但是___Direct Eval___则会在eval作用域中执行
+
+#### 严格作用域继承的关系
+一般而言函数从其外部继承严格作用域，也就是如果一个函数处于严格模式作用域之中，那么函数本身也将是严格模式的。
+
+    function a(){'use strict'; eval('var eval = 1');}
+
+    function c() {'use strict'; function e() {var eval = 2; console.log(eval);} e();}
+
+特别要注意的是上述的前提是：函数是定义在严格模式，而不是执行在严格模式的，例如如下：
 
     function a() {}
     function b() {'use strict'; a();} // 尽管b函数是严格模式，但是a由于不是定义在严格模式之下，所以a也不知严格模式
     function b() {'use strict'; function a() {}} // 此时a是严格模式
 
-使用Function构造器所创建的函数并不从其定义的外部作用域中继承严格模式。
+额外注意的一点是：
+使用Function构造器所创建的函数并不从其定义的外部作用域中继承严格模式，唯一的方式就是在其内部声明使用严格模式。
 
     'use strict';
     var f = new Function('eval', 'arguments', 'eval = 10; arguments = 1;')
@@ -65,7 +62,8 @@ ECMAScript 5.1中定义的指令序言如下：
     var f = new Function('eval', 'arguments', '"use strict"; eval = 10; arguments = 1;')
     f(); // SyntaxError
 
-最后，即使在严格模式下，indirect eval会在全局环境中创建变量，但是direct eval则会在eval作用域中执行
+
+
 
 ## 严格模式对语法及运行时的js都有影响
 
@@ -207,3 +205,30 @@ callee以及caller由于存在安全问题而被限制
     }
 
 
+## ES5.1 中的严格模式的说明
+
+在ES5.1规范中，严格模式在文档最后的附录部分被具体列出了，尽管在其ES5.1的正文中提到了很多细节，以及具体实现的算法描述，下面给出附录中的总体描述：
+
++ 标识符`implement`, `interface`, `let`, `package`, `private`, `protected`, `public`, `static`以及`yield`被作为未来保留关键字指令
++ 禁止对数字字面量___NumericLiteral___的拓展以支持八进制数字字面量___OctalIntegerLiteral___
++ 禁止对转移字符串字面量___EscapeSequence___的拓展以支持八进制转移字符串___OctalEscapeSequence___
++ 赋值语句中向未声明的标示符或者无指向的引用并不会在全局作用域中创建变量，同时___LeftHandSide___的左边也不能指向一个`{[[Writable]: false}`的对象的成员属性，或者`{[[set]]: undefined}`的对象的方法属性，以及不扩扩展对象(`[[Extensible]]`属性为false)的任意成员。
++ eval以及arguments不能出现在赋值操作符或者后缀表达式___PostfixExpress___或者在前缀自增符号及后缀自增符号中的一元表达式___UnaryExpress___的___LeftHandSideExpression___
++ Arguments对象定义了不可配置的属性（Non-configurable）的`caller`及`callee`属性，调用这些属性将抛出`TypeError`异常
++ Arguments对象与函数实际传入参数之间没有动态绑定关系
++ `arguments`变量标识符是作为对arguments对象的不可变引用，因而也就不能被作为赋值表达式的赋值目标
++ 如果对象字面量中包含重复的成员属性名则抛出`SyntaxError`异常
++ 如果`eval`及`arguments`作为对象的属性名称则抛出`SyntaxError`（原文如下：在属性赋值语句中，`eval`及`arguments`出现在属性赋值表达式___PropertyAssignment___中的属性赋值参数列表___PropertySetParameterList___中, 作为标示符使用，也就是说`eval`及`argument`不能作为属性名称使用）
++ 严格模式不能够将`eval`外部的变量及函数赋给`eval`内部，而是`eval`函数内部会创建一个新的变量环境，用于`eval`函数内部声明绑定使用。
++ 如果`this`变量在严格模式下使用，则`this`不会被强制转换为对象类型，`null`及`undefined`的`this`值不会被转化为全局对象，同时基本类型不会被转换为包裹对象
++ 如果`delete`作为一元操作符，直接作用于一个变量、函数参数或者函数名，则抛出`SyntaxError`异常
++ 如果`delete`删除的对象的对象的属性描述符是`{[[configurable: false}`，则抛出`TypeError`异常
++ 当变量声明存在`eval`及`arguments`变量，则抛出`SyntaxError`异常
++ 严格模式中不能存在___WithStatement___，__with语句__将抛出`SyntaxError`异常
++ 如果___TryStatement___中的`catch`的变量中存在`eval`及`arguments`，则抛出`SyntaxError`异常
++ 如果函数声明或者函数表达式中`eval`及`arguments`作为函数参数存在则抛出`SyntaxError`异常
++ 在函数表达式或者函数声明，或者使用`Function`构造函数创建的函数中，存在两个以上的同名参数，则抛出`SyntaxError`异常
++ 不能创建及更改名为`caller`及`arguments`且挂在在函数本身身上的属性
++ 尝试使用`eval`或者`arguments`作为变量标识符、函数声明、函数表达式或者作为函数参数将抛出`SyntaxError`异常
+
+[ECMAScript5.1 Annex C, The Strict Mode of ECMAScript 原文部分链接](http://www.ecma-international.org/ecma-262/5.1/#sec-C)
