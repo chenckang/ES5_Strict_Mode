@@ -1,6 +1,18 @@
-# ECMAScript5.1 严格模式浅入深出
+# 浅入深出 ECMAScript5.1 严格模式
+这边文章的探讨的话题是ECMAScript中严格模式的特性，以浅入深出的方式来介绍下，包括但不局限于严格模式的意义、严格模式的开启、严格模式到底限制了什么以及其具体原因，文章的最后给出了翻译自ES-262附录部分的内容，语言稍作调整以方便理解与阅读。
+
+从深入浅出的角度来说，本文会从简单到复杂，一步步深入剖析严格模式，希望能够一步步引导读者理解严格模式，并在迫不及待的使用在自己的项目之中。
 
 ## 严格模式的总体目标
+
+Javascript语言作为ECMAScript规范的实现者，存在极大的灵活性的同时，也由于松散的语法、弱的校验机制、一撮的特性等等而保守诟病。例如，
+
+    var a = 1; n = 1; // 原本想写成var a = 1, n = 1; 但错误的将逗号写成了分号，导致在global下创建了一个变量
+
+我们使用严格模式能够在程序运行时显式的暴露错误，从而帮助我们纠正潜在的威胁（尽管在ESLint等工具的帮助下，我们能够检测到很多的语法错误及写法问题，甚至定制StyleGuide来规范代码的写法以消除潜在问题，但是这是额外的话题）。
+
+为了避免ES5对ES3做出大量的修改，就像ES4的那样，ES5在兼容既有的ES3语法基础上新增了很多特性，这些特性可以靠左ES3的一个依赖。
+这其中包括：纠正易出错的语法，将一些__deprecated__的特性给移除掉。
 
 大体而言，严格模式存在的意义如下三点：
 
@@ -8,17 +20,29 @@
 + 第二，严格模式消除了一些不利于ECMAScript引擎性能优化的语言特性
 + 第三，严格模式禁止可能在后续的ECMAScript版本中所采用的语法
 
-## 开启严格模式
+## 严格模式指令
 
-在任何的其他js代码前加上，`'use strict'`或者`"use strict"`，已开启针对一个代码单元（Code Unit
+在任何的其他js代码前加上，`'use strict'`或者`"use strict"`，已开启针对一个__代码单元__（Code Unit
 ）的严格模式。这串字符就是指令序言（___Directive Prologues___)
 
 ECMAScript 5.1中定义的指令序言如下：
+
 > A Directive Prologues is a sequence of directives represented entirely as string literals which followed by an optional semicolon. A Directive Prologue may be an empty sequence.
 
-目前ES5只定义了一个特别序言，也就是严格模式指令序言。
+然而目前ES5只定义了一个特别序言，也就是严格模式指令序言，尽管可以自己写出一些指令序言，但是它们将不会被当作有效的命令而生效。例如：
+    
+    'use nostrict';
+    'use strict'; // 这行指令才是有效的
 
-注意，当指令序言包含一个和多个指令时，浏览器可能会触发一个警告。
+ECMAScript对严格指令定义如下___Use Strict Directive___
+
+>A Use Strict Directive is a directive in a Directive Prologue whose string literal is either the exact character sequences "use strict" or 'use strict'. A Use Strict Directive may not contain an escape sequence or line continuation. This directive is used for specifying a strict mode of a code unit.
+
+可以看到`'use strict'`或者`"use strict"`是被明确定义的开启严格模式的方式。
+
+## 严格模式的开启及作用域
+
+如上文所诉，严格模式作用于一个代码单元
 
 总体而言按作用域范围划分存在几种类型的严格模式：
 
@@ -38,9 +62,8 @@ ECMAScript 5.1中定义的指令序言如下：
 
     function a(){eval('"use strict";var eval = 1');}
 
-最后，即使在严格模式下，___Indirect Eval___会在全局环境中创建变量，但是___Direct Eval___则会在eval作用域中执行
+#### 关于作用域的几点特殊说明
 
-#### 严格作用域继承的关系
 一般而言函数从其外部继承严格作用域，也就是如果一个函数处于严格模式作用域之中，那么函数本身也将是严格模式的。
 
     function a(){'use strict'; eval('var eval = 1');}
@@ -50,7 +73,7 @@ ECMAScript 5.1中定义的指令序言如下：
 特别要注意的是上述的前提是：函数是定义在严格模式，而不是执行在严格模式的，例如如下：
 
     function a() {}
-    function b() {'use strict'; a();} // 尽管b函数是严格模式，但是a由于不是定义在严格模式之下，所以a也不知严格模式
+    function b() {'use strict'; a();} // 尽管b函数是严格模式，但是a由于不是定义在严格模式之下，所以a并不是严格模式
     function b() {'use strict'; function a() {}} // 此时a是严格模式
 
 额外注意的一点是：
@@ -62,10 +85,10 @@ ECMAScript 5.1中定义的指令序言如下：
     var f = new Function('eval', 'arguments', '"use strict"; eval = 10; arguments = 1;')
     f(); // SyntaxError
 
+闭包
+最后，即使在严格模式下，___Indirect Eval___会在全局环境中创建变量，但是___Direct Eval___则会在eval作用域中执行
 
-
-
-## 严格模式对语法及运行时的js都有影响
+## 严格模式的限制作用
 
 ### 将mistakes转换为errors
 
@@ -205,7 +228,7 @@ callee以及caller由于存在安全问题而被限制
     }
 
 
-## ES5.1 中的严格模式的说明
+## 附录 ES5.1 中的严格模式的说明
 
 在ES5.1规范中，严格模式在文档最后的附录部分被具体列出了，尽管在其ES5.1的正文中提到了很多细节，以及具体实现的算法描述，下面给出附录中的总体描述：
 
