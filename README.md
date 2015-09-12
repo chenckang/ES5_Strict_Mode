@@ -1,4 +1,4 @@
-# 浅入深出 ECMAScript5.1 严格模式
+# 深入浅出 ECMAScript5.1 严格模式
 这边文章的探讨的话题是ECMAScript中严格模式的特性，以浅入深出的方式来介绍下，包括但不局限于严格模式的意义、严格模式的开启、严格模式到底限制了什么以及其具体原因，文章的最后给出了翻译自ES-262附录部分的内容，语言稍作调整以方便理解与阅读。
 
 从深入浅出的角度来说，本文会从简单到复杂，一步步深入剖析严格模式，希望能够一步步引导读者理解严格模式，并在迫不及待的使用在自己的项目之中。
@@ -7,7 +7,8 @@
 
 Javascript语言作为ECMAScript规范的实现者，存在极大的灵活性的同时，也由于松散的语法、弱的校验机制、一撮的特性等等而保守诟病。例如，
 
-    var a = 1; n = 1; // 原本想写成var a = 1, n = 1; 但错误的将逗号写成了分号，导致在global下创建了一个变量
+    // 原本想写成var a = 1, n = 1; 但错误的将逗号写成了分号，导致在global下创建了一个变量
+    var a = 1; n = 1;
 
 我们使用严格模式能够在程序运行时显式的暴露错误，从而帮助我们纠正潜在的威胁（尽管在ESLint等工具的帮助下，我们能够检测到很多的语法错误及写法问题，甚至定制StyleGuide来规范代码的写法以消除潜在问题，但是这是额外的话题）。
 
@@ -54,19 +55,19 @@ ECMAScript对严格指令定义如下___Use Strict Directive___
 
 #### 函数作用域的严格模式
 
-    var a = function(){/* comment here */'use nostrict'; 'use strict'; var eval = 1;}
+    var a = function () {/* comment here */'use nostrict'; 'use strict'; var eval = 1;}
     // 虽然上诉函数表达式的使用的指令序言不止一个，但是目前只有'use strict'是生效的。
     // 注释不影响严格模式的生效
 
 #### eval内部的严格模式
 
-    function a(){eval('"use strict";var eval = 1');}
+    function a() {eval('"use strict";var eval = 1');}
 
 #### 关于作用域的几点特殊说明
 
 一般而言函数从其外部继承严格作用域，也就是如果一个函数处于严格模式作用域之中，那么函数本身也将是严格模式的。
 
-    function a(){'use strict'; eval('var eval = 1');}
+    function a() {'use strict'; eval('var eval = 1');}
 
     function c() {'use strict'; function e() {var eval = 2; console.log(eval);} e();}
 
@@ -85,18 +86,20 @@ ECMAScript对严格指令定义如下___Use Strict Directive___
     var f = new Function('eval', 'arguments', '"use strict"; eval = 10; arguments = 1;')
     f(); // SyntaxError
 
-闭包
-最后，即使在严格模式下，___Indirect Eval___会在全局环境中创建变量，但是___Direct Eval___则会在eval作用域中执行
+最后，即使在严格模式下，___Indirect Eval___ 会在全局环境中创建变量，但是 ___Direct Eval___ 则会在eval作用域中执行
 
-## 严格模式的限制作用
+## 严格模式的表现及原理
 
-### 将mistakes转换为errors
+### 将隐式的错误转换为显示的异常（Throw Errors)
+
+由于JavaScript本身的宽松特性，采取静默处理错误的方式来保持语言的简单性和便捷性，这亦被人看作是一种玩具式语言的理由之一，静默处理的错误可能会为整体程序埋下潜在的定时炸弹，特别是在前端项目越做越大的情况下，这方面的例子诸如: 不经意间创造的全局变量、对象上重复的键名、重复的函数参数声明等。看似简单的错误潜藏在大型项目中，即使是富有经验的工程师也难以排查甚至是自己也不经意间犯错。如果能在解释层面或者编译层面，直接抛出相关异常，会极大程度上杜绝因不经意间的错误而带来的尴尬之境。具体如下：
 
 #### 首先，让不经意间创建全局变量变得不可能
 
-    mistypedVariable = 15 // 由于拼错了变量而创建全局变量，严格模式下会抛出ReferenceError异常
+    // 未使用var而创建全局变量，严格模式下会抛出ReferenceError异常
+    mistypedVariable = 15 
 
-#### 第二，任何给不能写的属性（[[writable]]为false）赋值，赋值给只读属性，给不可拓展的对象赋新属性（[[extensible]]为false），给NaN赋值，会抛出异常（TypeError）
+#### 第二，任何给不可写的属性（[[writable]]为false）赋值、给不可拓展的对象赋新属性（[[extensible]]为false）、以及给NaN赋值，则会抛出异常（TypeError）
 
     function a() {'use strict'; NaN = 1}
     a() // TypeError
@@ -139,7 +142,7 @@ parseInt：
     parseInt('08') // 0
     parseInt('09') // 0 ES5中相关的解析算法已被移出
 
-#### 第七，和继承的属性有关
+#### 第七，和继承的属性如果不可写，则尝试赋值会显示抛出TypeError
 
     "use strict";
     var foo = Object.defineProperty({}, "x", {
@@ -148,6 +151,7 @@ parseInt：
     });
     var bar = Object.create(foo);
     console.log(bar.x); // 10, inherite
+
     bar.x = 20; // TypeError
     console.log(bar.x); // still 10, if non-strict mode
     Object.defineProperty(bar, "x", { // OK
@@ -156,18 +160,23 @@ parseInt：
     console.log(bar.x); // 20
 
 ### 简化变量使用
+
+这方面主要在于控制不利于性能优化、及容易出错的变量特性而做出的限制
+
 #### 第一，编译优化
 
-很多编译优化依赖于某个变量就在一个具体的位置，然而，js有时候会使变量所在的对应位置直到运行时才能得到。严格模式让with语句抛出语法异常，所以也就没有对象会在运行期指向一个位置的地方
+很多编译优化依赖于某个变量在解释及执行的时候就确定相关执行环境，然而部分JS特性使得变量环境直到执行的时候才能确定，最典型的就是 ___with___。严格模式禁用了 ___with___ 语句。
 
     var x = 17;
     with(obj) { // Syntax Error
+        // 在编译期或者解析期，x的值是无法确定的
+        // 因而在性能优化方面也无从处理
         x;
     }
 
 #### 第二，eval语句的执行不会对当前LexicalEnvironment带来新的变量
 
-通常情况下，eval('var x;')会为当前环境带来新的变量，也就是eval在运行之前无法得知是否会给环境带来新变量，严格模式中eval不可影响外部变量
+通常情况下，eval('var x;')会为当前环境带来新的变量，也就是eval在运行之前无法得知是否会给环境带来新变量，严格模式中eval不可影响外部变量。
 
 #### 第三，严格模式禁止删除普通变量名，否则会抛出Syntax Error
 
